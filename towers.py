@@ -12,7 +12,7 @@ class Tower():
         self.category = t
         self.cost = m * 1.1
         self.level = 1
-        self. name = n
+        self.name = n
         
         
         self.rgb = rgb

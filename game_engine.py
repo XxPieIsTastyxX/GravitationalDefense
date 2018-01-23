@@ -82,6 +82,8 @@ class Game_Engine():
             
             
         update()
+        
+    def run(self):
         while True:
             self.mode_build()
             self.mode_onslaught()
@@ -214,60 +216,31 @@ class Game_Engine():
                 update()
                 
                 key2 = ord(readchar.readchar())
+                temp_tower = None
                 if key2 == 49:
-                    temp_moon.tower = towers.Mass_Driver()
-                    if(self.metal >= temp_moon.tower.cost):
-                        self.metal -= temp_moon.tower.cost
-                        self.buildMenu.setSize(20)
-                        self.buildMenu.setText('Moon ' + chr(key) + '\n\nMass Driver\n\n Level 1')
-                    else:
-                        temp_moon.tower = None
+                    temp_tower = towers.Mass_Driver()
                 
                 elif key2 == 50:
-                    temp_moon.tower = towers.Laser_Turret()
-                    if(self.metal >= temp_moon.tower.cost):
-                        self.metal -= temp_moon.tower.cost
-                        self.buildMenu.setSize(20)
-                        self.buildMenu.setText('Moon ' + chr(key) + '\n\nLaser Turret\n\n Level 1')
-                    else:
-                        temp_moon.tower = None
+                    temp_tower = towers.Laser_Turret()
                 
                 elif key2 == 51:
-                    temp_moon.tower = towers.Plasma_Launcher()
-                    if(self.metal >= temp_moon.tower.cost):
-                        self.metal -= temp_moon.tower.cost
-                        self.buildMenu.setSize(20)
-                        self.buildMenu.setText('Moon ' + chr(key) + '\n\nPlasma Launcher\n\n Level 1')
-                    else:
-                        temp_moon.tower = None
+                    temp_tower = towers.Plasma_Launcher()
                 
                 elif key2 == 52:
-                    temp_moon.tower = towers.Tesla_Arc()
-                    if(self.metal >= temp_moon.tower.cost):
-                        self.metal -= temp_moon.tower.cost
-                        self.buildMenu.setSize(20)
-                        self.buildMenu.setText('Moon ' + chr(key) + '\n\nTesla Arc\n\n Level 1')
-                    else:
-                        temp_moon.tower = None
+                    temp_tower = towers.Tesla_Arc()
                 
                 elif key2 == 53:
-                    temp_moon.tower = towers.Kinetic_Artillery()
-                    if(self.metal >= temp_moon.tower.cost):
-                        self.metal -= temp_moon.tower.cost
-                        self.buildMenu.setSize(20)
-                        self.buildMenu.setText('Moon ' + chr(key) + '\n\nKinetic Artillery\n\n Level 1')
-                    else:
-                        temp_moon.tower = None
+                    temp_tower = towers.Kinetic_Artillery()
                         
                 elif key2 == 54:
-                    temp_moon.tower = towers.Fusion_Cannon()
-                    if(self.metal >= temp_moon.tower.cost):
-                        self.metal -= temp_moon.tower.cost
-                        self.buildMenu.setSize(20)
-                        self.buildMenu.setText('Moon ' + chr(key) + '\n\nFusion Cannon\n\n Level 1')
-                    else:
-                        temp_moon.tower = None
-                update()
+                    temp_tower = towers.Fusion_Cannon()
+                    
+                if temp_tower != None and self.metal >= temp_tower.cost:
+                    self.metal -= temp_tower.cost
+                    self.buildMenu.setSize(20)
+                    self.buildMenu.setText('Moon %s\n\n%s\n\n Level 1' % (chr(key), temp_tower.name))
+                    temp_moon.tower = temp_tower.name
+                    
                 #assign tower or return back to moon selection
             else:
                 self.buildMenu.setSize(20)
@@ -286,10 +259,11 @@ class Game_Engine():
             self.buildMenu.setSize(20)        
             self.buildMenu.setText(self.defBuildText)
             self.exit.setText('Press N to start wave')
+            
             update()
-        
-        
-ge = Game_Engine()
 
-
+        
+if __name__ == '__main__':
+    ge = Game_Engine()
+    ge.run()
             
