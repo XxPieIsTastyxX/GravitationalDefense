@@ -87,16 +87,13 @@ class Game_Engine():
         while True:
             self.mode_build()
             self.mode_onslaught()
-    
-    def distance(self, ship, moon):
-        return sqrt(phy.norm_sqr(phy.vec_sum(moon.position, phy.vec_scale(ship.position, -1))))
           
     def collided(self, ship):
         if phy.norm_sqr(ship.position) < 625:
             self.planet_health -= ship.power + 5
             return True
         for m in self.moonlist:
-            if self.distance(ship, m) < m.radius + ship.radius:
+            if phy.distance(ship, m) < m.radius + ship.radius:
                 return True
         return False
     
