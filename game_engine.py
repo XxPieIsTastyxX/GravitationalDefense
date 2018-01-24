@@ -11,6 +11,7 @@ import readchar
 
 LOOT_MODIFIER = 3
 DAMAGE_MODIFIER = .4
+TIME_MODIFIER = 3
 
 seed()
 
@@ -21,7 +22,7 @@ class Game_Engine():
         self.hasStarted = False
         self.planet_health = 127
         self.wave_num = 1
-        self.metal = 200
+        self.metal = 100
         
         self.active = []
         self.shots = []
@@ -99,13 +100,13 @@ class Game_Engine():
     
     def shoot(self, moon, ship):
         ship.damage(moon.tower.damage * DAMAGE_MODIFIER, moon.tower.category)
-        if ship.health < 0:
-            self.destroy(ship)
         moon.tower.last_shot = time.time()
         newline = Line(Point(moon.position[0] + 400,moon.position[1] + 400), Point(ship.position[0] + 400, ship.position[1] + 400))
-        newline.setFill(moon.tower.rgb)
+        newline.setFill(moon.tower.color)
         newline.draw(self.win)
         self.shots.append((newline, time.time()))
+        if ship.health < 0:
+            self.destroy(ship)
         
     def destroy(self, ship):
         self.metal += int(ship.power * LOOT_MODIFIER)
@@ -119,9 +120,9 @@ class Game_Engine():
             phy.move_moon(m, self.timeThisFrame)
             m.image.move(m.last_move[0], m.last_move[1])
             
-            if m.tower is not None and m.tower.last_shot + m.tower.cooldown < time.time():
+            if m.tower is not None and m.tower.last_shot + m.tower.cooldown / TIME_MODIFIER < time.time():
                 for s in self.active:
-                    if self.distance(s, m) < m.tower.range:
+                    if phy.distance(s, m) < m.tower.range:
                         self.shoot(m, s)
                         break
         
@@ -131,6 +132,8 @@ class Game_Engine():
             s.image.move(s.last_move[0], s.last_move[1])
             if self.collided(s):
                 self.destroy(s)
+            else:
+                s.shieldgen(self.timeThisFrame)
             
             
     def mode_onslaught(self):
@@ -139,8 +142,8 @@ class Game_Engine():
         remaining_points = pow(self.wave_num + 3, 2)
        
         while remaining_points > 0:
-            min_possible = min(ceil(log(remaining_points / 40, 2)), 4)
-            if remaining_points >= 64:
+            min_possible = min(ceil(log(remaining_points / 200, 2)), 4)
+            if remaining_points >= 32:
                 max_possible = 4
             else:
                 max_possible = min(floor(log(remaining_points, 2)), 3)
@@ -160,7 +163,7 @@ class Game_Engine():
                 remaining_points -= 8
             else:
                 upcoming.append(ships.Dreadnought())
-                remaining_points -= 64
+                remaining_points -= 32
             
         self.active.append(upcoming.pop())  
         self.active[0].image.draw(self.win)
@@ -184,17 +187,18 @@ class Game_Engine():
             self.planet.setFill(color_rgb(127 - max(self.planet_health, 0), max(self.planet_health, 0), 0))
             
             update()
-            self.timeThisFrame = time.time() - startTime
-            fps = min(int(1/self.timeThisFrame), 999)
-            print(fps)    
+            self.timeThisFrame = (time.time() - startTime) * TIME_MODIFIER
+            fps = min(int(TIME_MODIFIER/self.timeThisFrame), 999)
+            print('FPS: %d' % fps)    
                     
         
  
         
         
     def mode_build(self):
-        print(self.metal)
+        print('Metal: %d' % self.metal)
         while True:
+            print(self.metal)
             key = ord(readchar.readchar())
             if key == 110:
                 return
@@ -235,21 +239,20 @@ class Game_Engine():
                 if temp_tower != None and self.metal >= temp_tower.cost:
                     self.metal -= temp_tower.cost
                     self.buildMenu.setSize(20)
-                    self.buildMenu.setText('Moon %s\n\n%s\n\n Level 1' % (chr(key), temp_tower.name))
-                    temp_moon.tower = temp_tower.name
+                    self.buildMenu.setText('Moon %c\n\n%s\n\n Level 1' % (key, temp_tower.name))
+                    temp_moon.tower = temp_tower
                     
                 #assign tower or return back to moon selection
             else:
                 self.buildMenu.setSize(20)
-                self.buildMenu.setText('Moon ' + chr(key) + "\n\n" + temp_moon.tower.name + "\n\n Level " + str(temp_moon.tower.level) + "\n\n Press 8 to upgrade \n\n Press 9 to destroy")
+                self.buildMenu.setText('Moon %c\n\n%s\n\n Level %d\n\n Press 8 to upgrade \n\n Press 9 to destroy' % (key, temp_moon.tower.name, temp_moon.tower.level))
                 update()
                 
                 key2 = ord(readchar.readchar())
                 if key2 == 56 and self.metal >= temp_moon.tower.cost:
-                    temp_moon.tower.upgrade()
                     self.metal -= temp_moon.tower.cost
                     temp_moon.tower.upgrade()
-                if key2 == 57:
+                elif key2 == 57:
                     self.metal += temp_moon.tower.cost/2
                     temp_moon.tower = None
             

@@ -1,28 +1,26 @@
 from time import time
-from graphics import color_rgb
 
 
-
-class Tower():
+class Tower:
     def __init__(self, d, c, r, t, m, rgb, n):
         self.damage = d
         self.cooldown = c
         self.base_cooldown = c
         self.range = r
         self.category = t
-        self.cost = m * 1.1
+        self.cost = m
         self.level = 1
         self.name = n
         
         
-        self.rgb = rgb
+        self.color = rgb
         
         self.last_shot = time()
         
     def upgrade(self):
         self.level += 1
-        self.cooldown /= 2
-        self.cost = int(self.cost * 2.2)
+        self.cooldown /= 1.75
+        self.cost *= 2
     
 class Laser_Turret(Tower):
     def __init__(self):

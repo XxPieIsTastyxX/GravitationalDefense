@@ -23,7 +23,7 @@ def norm_sqr(vec):
         total += pow(c, 2)
     return total
 
-def distance(self, ship, moon):
+def distance(ship, moon):
     return sqrt(norm_sqr(vec_sum(moon.position, vec_scale(ship.position, -1))))
          
 def move_moon(moon, time):

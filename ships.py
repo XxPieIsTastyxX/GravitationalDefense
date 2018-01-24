@@ -1,16 +1,17 @@
 import graphics
 from random import randint
 
-STARTING_VELOCITY = 10
+STARTING_VELOCITY = 11
 SHIELD_REGEN = 2.5
 BASE_THRUST = 1
+HEALTH_MODIFIER = 1
 
 class Ship:
     def __init__(self, h, a, s, p, t, r):
-        self.health = h
-        self.max_health = h
+        self.health = h * HEALTH_MODIFIER
+        self.max_health = self.health
         self.armor = a
-        self.shields = s
+        self.shields = s * HEALTH_MODIFIER
         self.power = p
         self.thrust = t * BASE_THRUST
         self.radius = r
@@ -52,8 +53,8 @@ class Ship:
         self.image.setFill(graphics.color_rgb(int(127 * (1 + max(self.health / self.max_health, 0))), self.armor * 5, int(127 * max(self.shields / self.max_shields, 0))))
         
     def shieldgen(self, time):
-        if self.shields == 0:
-            return
+        #if self.shields == 0:
+        #    return
         self.shields += SHIELD_REGEN * time
         if self.shields > self.max_shields:
             self.shields = self.max_shields
@@ -77,6 +78,6 @@ class Battleship(Ship):
         
 class Dreadnought(Ship):
     def __init__(self):
-        super().__init__(70, 25, 40, 64, .08, 5.5)
+        super().__init__(70, 25, 40, 32, .08, 5.5)
         
         
