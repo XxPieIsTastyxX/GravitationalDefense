@@ -21,7 +21,7 @@ class Game_Engine():
         self.hasStarted = False
         self.planet_health = 127
         self.wave_num = 1
-        self.metal = 100
+        self.metal = 200
         
         self.active = []
         self.shots = []
