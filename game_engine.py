@@ -10,7 +10,6 @@ import towers
 import readchar
 
 LOOT_MODIFIER = 3
-DAMAGE_MODIFIER = .4
 TIME_MODIFIER = 3
 
 seed()
@@ -88,31 +87,24 @@ class Game_Engine():
         while True:
             self.mode_build()
             self.mode_onslaught()
+            self.wave_num += 1
           
-    def collided(self, ship):
-        if phy.norm_sqr(ship.position) < 625:
-            self.planet_health -= ship.power + 5
-            return True
-        for m in self.moonlist:
-            if phy.distance(ship, m) < m.radius + ship.radius:
-                return True
-        return False
     
     def shoot(self, moon, ship):
-        ship.damage(moon.tower.damage * DAMAGE_MODIFIER, moon.tower.category)
+        ship.damage(moon.tower.damage, moon.tower.category)
         moon.tower.last_shot = time.time()
         newline = Line(Point(moon.position[0] + 400,moon.position[1] + 400), Point(ship.position[0] + 400, ship.position[1] + 400))
         newline.setFill(moon.tower.color)
         newline.draw(self.win)
         self.shots.append((newline, time.time()))
         if ship.health < 0:
-            self.destroy(ship)
+            self.destroy(ship, True)
         
-    def destroy(self, ship):
-        self.metal += int(ship.power * LOOT_MODIFIER)
+    def destroy(self, ship, reward = False):
+        if reward:
+            self.metal += int(ship.power * LOOT_MODIFIER)
+            self.metalText.setText(str(self.metal))
         ship.image.undraw()
-        self.metalText.setText(str(self.metal))
-        update()
         self.active.remove(ship)
                   
     def moon_tick(self):   
@@ -130,8 +122,15 @@ class Game_Engine():
         for s in self.active:
             phy.move_ship(s, self.moonlist, self.timeThisFrame)
             s.image.move(s.last_move[0], s.last_move[1])
-            if self.collided(s):
+            dist = phy.norm_sqr(s.position) 
+            if dist > 320000:
                 self.destroy(s)
+            elif dist <= 625:
+                self.planet_health -= s.power
+                self.planet.setFill(color_rgb(127 - max(self.planet_health, 0), max(self.planet_health, 0), 0))
+                self.destroy(s)
+            elif phy.collided(s, self.moonlist):
+                self.destroy(s, True)
             else:
                 s.shieldgen(self.timeThisFrame)
             
@@ -139,9 +138,9 @@ class Game_Engine():
     def mode_onslaught(self):
         self.active = []
         upcoming = []
-        remaining_points = pow(self.wave_num + 3, 2)
-       
+        remaining_points = floor(4 + .4 * pow(self.wave_num, 2.4))
         while remaining_points > 0:
+            print('Wave points: %d' % remaining_points)
             min_possible = min(ceil(log(remaining_points / 200, 2)), 4)
             if remaining_points >= 32:
                 max_possible = 4
@@ -165,13 +164,21 @@ class Game_Engine():
                 upcoming.append(ships.Dreadnought())
                 remaining_points -= 32
             
+            print(upcoming[-1].name)
         self.active.append(upcoming.pop())  
         self.active[0].image.draw(self.win)
         last_spawn = time.time()
         while len(self.active) != 0 or len(upcoming) != 0:
             startTime = time.time()
             
-            if startTime > last_spawn + 2 and len(upcoming) != 0:
+            try:
+                fps = min(int(TIME_MODIFIER/self.timeThisFrame), 999)
+            except:
+                pass
+            else:
+                print('FPS: %d' % fps)
+            
+            if len(upcoming) != 0 and startTime > last_spawn + 5 / TIME_MODIFIER:
                 arriving = upcoming.pop()
                 self.active.append(arriving)
                 arriving.image.draw(self.win)
@@ -184,12 +191,9 @@ class Game_Engine():
             
             self.moon_tick()
             self.ship_tick()
-            self.planet.setFill(color_rgb(127 - max(self.planet_health, 0), max(self.planet_health, 0), 0))
             
             update()
-            self.timeThisFrame = (time.time() - startTime) * TIME_MODIFIER
-            fps = min(int(TIME_MODIFIER/self.timeThisFrame), 999)
-            print('FPS: %d' % fps)    
+            self.timeThisFrame = (time.time() - startTime) * TIME_MODIFIER   
                     
         
  
@@ -249,11 +253,11 @@ class Game_Engine():
                 update()
                 
                 key2 = ord(readchar.readchar())
-                if key2 == 56 and self.metal >= temp_moon.tower.cost:
-                    self.metal -= temp_moon.tower.cost
-                    temp_moon.tower.upgrade()
+                cost = temp_moon.tower.upgrade_cost
+                if key2 == 56 and self.metal >= cost and temp_moon.tower.upgrade():
+                    self.metal -= cost
                 elif key2 == 57:
-                    self.metal += temp_moon.tower.cost/2
+                    self.metal += cost 
                     temp_moon.tower = None
             
             self.buildMenu.setSize(20)        

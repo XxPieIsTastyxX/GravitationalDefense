@@ -25,6 +25,12 @@ def norm_sqr(vec):
 
 def distance(ship, moon):
     return sqrt(norm_sqr(vec_sum(moon.position, vec_scale(ship.position, -1))))
+
+def collided(ship, moons):
+    for m in moons:
+        if distance(ship, m) < m.radius + ship.radius:
+            return True
+    return False
          
 def move_moon(moon, time):
     new_angle = moon.angle - 400 * time / moon.period

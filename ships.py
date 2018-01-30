@@ -4,10 +4,10 @@ from random import randint
 STARTING_VELOCITY = 11
 SHIELD_REGEN = 2.5
 BASE_THRUST = 1
-HEALTH_MODIFIER = 1
+HEALTH_MODIFIER = 3
 
 class Ship:
-    def __init__(self, h, a, s, p, t, r):
+    def __init__(self, h, a, s, p, t, r, n):
         self.health = h * HEALTH_MODIFIER
         self.max_health = self.health
         self.armor = a
@@ -16,10 +16,12 @@ class Ship:
         self.thrust = t * BASE_THRUST
         self.radius = r
         
+        self.name = n
+        
         if s == 0:
             self.max_shields = 1
         else:
-            self.max_shields = s
+            self.max_shields = self.shields
         
         self.position = randint(-50,50), -400
         self.velocity = -STARTING_VELOCITY, 0
@@ -36,9 +38,9 @@ class Ship:
         if category == 'energy':
             multiplier = .8
         elif category == 'kinetic':
-            multiplier = 1.3 
+            multiplier = 1.2 
         elif category == 'plasma':
-            multiplier = .5
+            multiplier = .4
             piercing = 10
            
         damage = amt
@@ -62,22 +64,22 @@ class Ship:
             
 class Corvette(Ship):
     def __init__(self):
-        super().__init__(20, 0, 0, 1, .12, 2)
+        super().__init__(20, 0, 0, 1, .12, 2, 'Corvette')
                
 class Destroyer(Ship):
     def __init__(self):
-        super().__init__(25, 0, 15, 2, .1, 2.5)
+        super().__init__(25, 0, 15, 2, .1, 2.5, 'Destroyer')
         
 class Cruiser(Ship):
     def __init__(self):
-        super().__init__(35, 5, 25, 4, .1, 3)
+        super().__init__(35, 5, 25, 4, .1, 3, 'Cruiser')
         
 class Battleship(Ship):
     def __init__(self):
-        super().__init__(50, 15, 10, 8, .09, 3.5)
+        super().__init__(50, 15, 10, 8, .09, 3.5, 'Battleship')
         
 class Dreadnought(Ship):
     def __init__(self):
-        super().__init__(70, 25, 40, 32, .08, 5.5)
+        super().__init__(70, 25, 40, 32, .08, 5.5, 'Dreadnought')
         
         
